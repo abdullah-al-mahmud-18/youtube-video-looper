@@ -11,7 +11,7 @@ A static web page that plays a chosen segment of a YouTube video on repeat, from
 3. Enter the number of loops, or turn on **Infinite**.
 4. Click **Load & Play**.
 
-Use **Play/Pause**, **Stop**, and **Restart loops** under the player. On a keyboard, `Space` plays or pauses and `R` restarts the loops.
+Use **Play/Pause**, **Stop**, and **Restart loops** under the player. On a keyboard, `Space` plays or pauses and `R` restarts the loops, as long as focus isn't on a form field. If a button has focus, `Space` presses that button instead.
 
 **Use current time** fills in a start or end time from the video's current position.
 

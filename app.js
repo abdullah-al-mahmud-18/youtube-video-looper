@@ -279,6 +279,7 @@
       status = 'Stopped';
     }
     setText(ui.status, status);
+    ui.status.dataset.mode = state.mode;
 
     ui.segment.hidden = !hasVideo;
     if (hasVideo) setText(ui.segment, `Segment ${formatTime(state.start)} → ${formatTime(state.end)}`);
@@ -566,9 +567,11 @@
 
   function handleKeydown(event) {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    if (event.target.closest?.('input, textarea, select, button, a')) return;
+    if (event.target.closest?.('input, textarea, select')) return;
 
     if (event.code === 'Space') {
+      // Space already activates a focused button or link, so don't toggle playback as well.
+      if (event.target.closest?.('button, a')) return;
       event.preventDefault();
       togglePlayPause();
     } else if (event.key === 'r' || event.key === 'R') {
