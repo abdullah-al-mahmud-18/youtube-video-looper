@@ -29,6 +29,7 @@
     apiLoading: false,
     mode: 'idle', // 'idle' | 'playing' | 'done'
     videoId: null,
+    hasSegment: false, // false while a pasted video is only previewed, before Load & Play
     start: 0,
     end: 0,
     loopCount: 1, // Infinity when infinite mode is on
@@ -275,19 +276,21 @@
       status = `Loop ${state.completed + 1} of ${total}${paused ? ' (paused)' : ''}`;
     } else if (state.mode === 'done') {
       status = 'Done';
-    } else if (hasVideo) {
+    } else if (state.hasSegment) {
       status = 'Stopped';
+    } else if (hasVideo) {
+      status = 'Video loaded. Set a start and end time.';
     }
     setText(ui.status, status);
     ui.status.dataset.mode = state.mode;
 
-    ui.segment.hidden = !hasVideo;
-    if (hasVideo) setText(ui.segment, `Segment ${formatTime(state.start)} → ${formatTime(state.end)}`);
+    ui.segment.hidden = !state.hasSegment;
+    if (state.hasSegment) setText(ui.segment, `Segment ${formatTime(state.start)} → ${formatTime(state.end)}`);
 
     setText(ui.playPause, active ? 'Pause' : 'Play');
     ui.playPause.disabled = !hasVideo;
     ui.stop.disabled = state.mode !== 'playing';
-    ui.restart.disabled = !hasVideo;
+    ui.restart.disabled = !state.hasSegment;
     ui.startCurrent.disabled = ui.endCurrent.disabled = !(hasVideo && state.playerReady);
   }
 
@@ -400,10 +403,28 @@
     clearTimeout(state.hintTimer);
   }
 
+  /** Shows a pasted video in the player, ready to play, without starting any loops. */
+  function previewVideo(videoId) {
+    endSession();
+    state.videoId = videoId;
+    state.hasSegment = false;
+    setMessage(null);
+    setFieldError('end', null); // A duration error applied to the previous video.
+    if (state.playerReady) state.player.cueVideoById(videoId);
+    else ensurePlayer();
+    render();
+  }
+
+  /** Forgets a preview that failed, so pasting the same link again retries it. */
+  function clearFailedPreview() {
+    if (!state.hasSegment) state.videoId = null;
+  }
+
   function startSession({ videoId, start, end, loopCount }) {
     endSession();
     Object.assign(state, {
       videoId, start, end, loopCount,
+      hasSegment: true,
       mode: 'playing',
       durationChecked: false,
     });
@@ -428,7 +449,7 @@
   }
 
   function restartLoops() {
-    if (state.videoId === null) return;
+    if (!state.hasSegment) return;
     if (state.mode === 'idle' || !state.playerReady) {
       startSession(state);
       return;
@@ -443,7 +464,7 @@
 
   function togglePlayPause() {
     if (state.videoId === null) return;
-    if (state.mode !== 'playing') {
+    if (state.mode !== 'playing' && state.hasSegment) {
       restartLoops();
     } else if (state.playerReady) {
       if (isPlaybackActive()) state.player.pauseVideo();
@@ -470,6 +491,7 @@
       state.apiLoading = false;
       script.remove();
       endSession();
+      clearFailedPreview();
       setMessage('Couldn’t reach YouTube. Check your connection or ad blocker, then try again.', { isError: true });
       render();
     };
@@ -500,6 +522,7 @@
   function handlePlayerReady() {
     state.playerReady = true;
     if (state.mode === 'playing') loadSegment();
+    else if (state.videoId !== null && !state.hasSegment) state.player.cueVideoById(state.videoId);
     render();
   }
 
@@ -517,6 +540,7 @@
 
   function handlePlayerError(event) {
     endSession();
+    clearFailedPreview();
     const text = PLAYER_ERRORS[event.data] ?? `This video couldn’t be played (error ${event.data}).`;
     setMessage(text, { isError: true });
     render();
@@ -524,7 +548,7 @@
 
   // The API requires this exact global name; it is the only global this app creates.
   window.onYouTubeIframeAPIReady = () => {
-    if (state.mode === 'playing') ensurePlayer();
+    if (state.videoId !== null) ensurePlayer();
     render();
   };
 
@@ -557,6 +581,12 @@
     } catch {
       setMessage('Couldn’t copy automatically. Copy the link from your address bar instead.');
     }
+  }
+
+  /** Loads the video as soon as the URL field holds a new valid link, pasted or typed. */
+  function handleUrlInput() {
+    const videoId = parseVideoId(ui.url.value);
+    if (videoId !== null && videoId !== state.videoId) previewVideo(videoId);
   }
 
   function useCurrentTime(field) {
@@ -594,6 +624,7 @@
     ['url', 'start', 'end', 'loops'].forEach((field) => {
       ui[field].addEventListener('input', () => setFieldError(field, null));
     });
+    ui.url.addEventListener('input', handleUrlInput);
     [ui.start, ui.end].forEach((input) => {
       input.addEventListener('input', () => applyTimeMask(input));
       input.addEventListener('blur', () => {

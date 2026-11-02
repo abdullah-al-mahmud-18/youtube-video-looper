@@ -47,6 +47,9 @@ Hosted on **GitHub Pages**, so it must be fully static: no backend, no server-si
 - The loop count must be an integer of 1 or more, unless infinite is selected.
 
 ### Playback behavior
+- As soon as the URL field holds a new valid link, pasted or typed, load the video with `cueVideoById(videoId)`, without needing a start or end time.
+  - The video is ready to play but doesn't start by itself, and no loops run yet. The user can play it and use **Use current time** to pick the segment.
+  - This replaces any session that is running.
 - Clicking **Load & Play**:
   1. Creates the player, or reuses it with `loadVideoById({ videoId, startSeconds, endSeconds })`.
   2. Plays the segment.
@@ -100,6 +103,7 @@ Hosted on **GitHub Pages**, so it must be fully static: no backend, no server-si
 ## Testing (manual)
 The project owner runs these checks. When coding is done, hand the work over without running them or building test harnesses, unless asked:
 - [ ] Each URL format above loads correctly.
+- [ ] Pasting a link loads the video right away, with the start and end times empty.
 - [ ] A loop count of 1 plays the segment once, then stops.
 - [ ] A loop count of 3 plays exactly 3 times, and the counter is accurate.
 - [ ] Infinite mode loops until stopped.

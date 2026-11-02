@@ -6,7 +6,7 @@ A static web page that plays a chosen segment of a YouTube video on repeat, from
 
 ## Using it
 
-1. Paste a YouTube URL or an 11-character video ID.
+1. Paste a YouTube URL or an 11-character video ID. The video loads right away, so you can watch it to find the part you want.
 2. Enter the start and end times as `hh:mm:ss` or `mm:ss`. Type digits only and the colons are added for you, so `130` becomes `01:30` and `13000` becomes `01:30:00`.
 3. Enter the number of loops, or turn on **Infinite**.
 4. Click **Load & Play**.
