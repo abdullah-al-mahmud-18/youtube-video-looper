@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- YouTube embeds need the page origin in the Referer header. -->
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Loop any segment of a YouTube video as many times as you like.">
+  <title>YouTube Segment Looper</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 2l4 4-4 4'/%3E%3Cpath d='M3 12V9a3 3 0 0 1 3-3h15'/%3E%3Cpath d='M7 22l-4-4 4-4'/%3E%3Cpath d='M21 12v3a3 3 0 0 1-3 3H3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>YouTube Segment Looper</h1>
+      <p>Pick a start and end time, choose how many loops, and press play.</p>
+    </header>
+
+    <form id="form" class="form" novalidate>
+      <div class="field field-wide">
+        <label for="url">YouTube URL or video ID</label>
+        <input id="url" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+               placeholder="https://www.youtube.com/watch?v=…" aria-describedby="url-error">
+        <p class="error" id="url-error" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="start">Start time</label>
+        <div class="input-row">
+          <input id="start" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="00:01:30"
+                 aria-describedby="start-hint start-error">
+          <button type="button" class="btn btn-small" id="start-current" aria-label="Use current time as start time" disabled>Use current time</button>
+        </div>
+        <p class="hint" id="start-hint">hh:mm:ss or mm:ss. Type digits only; colons are added for you.</p>
+        <p class="error" id="start-error" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="end">End time</label>
+        <div class="input-row">
+          <input id="end" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" placeholder="00:02:00"
+                 aria-describedby="end-hint end-error">
+          <button type="button" class="btn btn-small" id="end-current" aria-label="Use current time as end time" disabled>Use current time</button>
+        </div>
+        <p class="hint" id="end-hint">hh:mm:ss or mm:ss. Type digits only; colons are added for you.</p>
+        <p class="error" id="end-error" hidden></p>
+      </div>
+
+      <div class="field field-wide">
+        <label for="loops">Number of loops</label>
+        <div class="input-row">
+          <input id="loops" class="input-short" type="number" inputmode="numeric" min="1" step="1" value="3"
+                 aria-describedby="loops-error">
+          <label class="check" for="infinite">
+            <input id="infinite" type="checkbox">
+            <span><span aria-hidden="true">∞ </span>Infinite</span>
+          </label>
+        </div>
+        <p class="error" id="loops-error" hidden></p>
+      </div>
+
+      <div class="form-actions field-wide">
+        <button type="submit" class="btn btn-primary">Load &amp; Play</button>
+        <button type="button" class="btn" id="copy-link">Copy share link</button>
+      </div>
+    </form>
+
+    <section class="player-frame" aria-label="Video player">
+      <div id="player" class="player-placeholder">Your video will appear here</div>
+    </section>
+
+    <section class="status-bar" aria-label="Playback status">
+      <div class="status-text">
+        <p id="status" class="status" aria-live="polite">Ready</p>
+        <p id="segment" class="segment" hidden></p>
+      </div>
+      <div class="controls">
+        <button type="button" class="btn" id="play-pause" disabled>Play</button>
+        <button type="button" class="btn" id="stop" disabled>Stop</button>
+        <button type="button" class="btn" id="restart" disabled>Restart loops</button>
+      </div>
+      <p id="message" class="message" aria-live="polite" hidden></p>
+    </section>
+
+    <p class="shortcuts"><kbd>Space</kbd> play/pause · <kbd>R</kbd> restart loops</p>
+  </main>
+</body>
+</html>
